@@ -24,7 +24,7 @@ namespace TestConsole
             {
                 ServiceName = "Rick's Service",
                 IntervalInMillseconds = 2000,
-                Perform = () =>
+                Perform = async () =>
                 {
                     Console.WriteLine("Fired");
                     var t = new ReportQueueManager();
