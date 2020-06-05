@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +14,29 @@ namespace TestConsole
         static void Main(string[] args)
         {
             //TestWithoutAsync();
-            TestWithAsync();
+            //TestWithAsync();
+            TestQueueManagerWithAsync();
         }
+
+        private static void TestQueueManagerWithAsync()
+        {
+            var config = new TimingComponentConfiguration
+            {
+                ServiceName = "Rick's Service",
+                IntervalInMillseconds = 2000,
+                Perform = () =>
+                {
+                    Console.WriteLine("Fired");
+                    var t = new ReportQueueManager();
+                    t.Manage();
+                }
+            };
+
+            var timing = new TimingComponent.TimingComponent(config, new ConsoleLogger());
+            timing.Start();
+            Console.ReadLine();
+        }
+
 
         private static void TestWithoutAsync()
         {
@@ -97,4 +119,45 @@ namespace TestConsole
 
     }
 
+    public class DefaultResult
+    {
+        public bool Success { get; set; }
+    }
+
+    public class ReportQueueManagerResult : DefaultResult
+    {
+
+    }
+
+    public class ReportQueueItemProcessorResult : DefaultResult
+    {
+
+    }
+
+    public class ReportQueueManager
+    {
+        public int[] _queue = new[] {1, 2, 3};
+
+        public async Task<ReportQueueManagerResult> Manage()
+        {
+            foreach (var queueItem in _queue)
+            {
+                var p = new ReportQueueItemProcessor();
+                await p.Process(queueItem);
+            }
+
+            return new ReportQueueManagerResult();
+        }
+    }
+
+    public class ReportQueueItemProcessor
+    {
+        public async Task<ReportQueueItemProcessorResult> Process(int item)
+        {
+            Console.WriteLine("Queue Item - "+item);
+            await Task.Delay(1000);
+            return new ReportQueueItemProcessorResult();
+        }
+
+    }
 }
